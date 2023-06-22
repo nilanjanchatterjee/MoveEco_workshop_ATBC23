@@ -18,6 +18,7 @@ library(move2) # download movement data
 library(sf) # handle spatial data
 library(ggplot2) # higher level plotting
 library(tmap) # spatial data visualization
+library(mapview) #interactive mapping
 library(amt) # Movement data analysis
 library(adehabitatLT) #movement data analysis
 library(dplyr) # basic operations on the data
@@ -32,6 +33,7 @@ head(dat)
 glimpse(dat)
 
 #' # Plotting the data
+#' ## Static map
 #' We'll use either *ggplot* or *tmap* package to plot the data
 #' We will also convert the spatial points into line-strings to plot the trajectory of the animal
 trck <- dat %>% 
@@ -45,7 +47,11 @@ ggplot()+
   theme_bw()+
   labs(col = "Individual_id")
 
+#' ## Interactive map
+#' There are programs like *leaflet* or *mapview* to plot the data interactively 
 
+mapview(dat$geometry, cex=0.5, alpha=0.5, map.types = "Esri.WorldImagery") + 
+  mapview(trck, map.types = "Esri.WorldImagery")
 
 #' # Creating *track* from the data
 #' The coordinates were extracted from the dataset downloaded from `Movebank` *https://www.movebank.org/cms/movebank-main* 
@@ -76,6 +82,11 @@ track_sum <-data_df_trck %>%
   unnest(cols=sr) %>% 
   print(n=nrow(data_df_trck))
 
+#' Try to focus on the median fix interval as collars can malfunction sometimes for data uploads.   
+#' First quartile, Median fix-interval and third quartile of the data is 15 minutes which shows the data collection was very regular.
+
+#' ## Creating trajectory 
+
 track_length <- data_df_trck |>
   nest(data= -"Individual_id") |>
   mutate(data = map(data, ~ .x |>
@@ -86,6 +97,8 @@ track_length <- data_df_trck |>
 #' # Plotting trajectory distribution
 #' We will plot the individual-wise distributions of step-length (m) and 
 #' turn angle (radians) to see how individuals move
+
+#' Step-length distribution
 ggplot(track_length)+
   geom_density(aes(x=sl_, col = Individual_id), linewidth=0.8) + 
   xlim(0,1000)+
@@ -93,15 +106,22 @@ ggplot(track_length)+
   theme_bw() +
   theme(legend.position = c(0.8,0.7))
  
+#' Turn-angle distribution
 ggplot(track_length)+
   geom_density(aes(x=ta_, col = Individual_id), linewidth=0.8) + 
   labs(x= "Turn angle")+
   theme_bw() 
 
 #' # Home-range Analysis
-#' There are multiple `R` packages available for Home-range analysis. The *adehabitat* packages are 
+#' There are multiple methods available to calculate the home-range . We'll cover the most popular and robust methods here.   
+#' 1. **Maximum Convex polygon** and 2. **Kernel density**    
+#'  This is not an exhaustive list and interested persons can check the 'ctmm' package for continuous time implementation of the telemetry data.
+#' There are also a lot of `R` packages available for these analysis. The *adehabitat* packages are 
 #' really important for home-range and trajectory analysis
-#' Here we would use the functions from the `amt` package as those can be used together with the data
+#' Here we would use the functions from the `amt` package as those can be used together with the `pipe` operator to compare the results.
+#' 
+
+## MCP analysis
 dat_hr_mcp <- data_df_trck |>
   nest(data = -"Individual_id") |>
   mutate(mcp_dat = map(data, ~ .x |>
@@ -110,6 +130,7 @@ dat_hr_mcp <- data_df_trck |>
   unnest(cols = mcp_area)
 colnames(dat_hr_mcp)[6] <- "MCP_area (sq.mtr)"
 
+## KDE analysis
 dat_hr_kde <- data_df_trck |>
   nest(data= -"Individual_id") |>
   mutate(kde_dat = map(data, ~ .x |>
@@ -118,11 +139,12 @@ dat_hr_kde <- data_df_trck |>
   unnest(cols = area)
 colnames(dat_hr_kde)[6] <-"KDE_area (sq.mtr)"
 
+## combining both the data
 dat_hr <- cbind(dat_hr_mcp[,c(1,4,6)], dat_hr_kde[,6])
 dat_hr
 
 #' # Plotting the Home-range
-#' # Calculate the convex hulls for each individual
+#' ## Calculate the convex hulls for each individual
 hull_dat <- data_df %>%
   group_by(individual.local.identifier) %>%
   slice(chull(X, Y))
