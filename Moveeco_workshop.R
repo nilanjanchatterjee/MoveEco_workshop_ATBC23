@@ -1,7 +1,7 @@
 #' ---
-#' title : "Movement Ecology Workshop"
-#' subtitle: "ATBC 2023"  
-#' author: "Supratim, Nilanjan, Ritesh"
+#' title : "Movement Ecology Workshop-ATBC 2023"
+#' subtitle: "Data Overview and preparation"  
+#' author: "Supratim, Nilanjan"
 #' date: "`r format(Sys.time(), '%d %B, %Y')`" 
 #' ---
 
@@ -96,9 +96,9 @@ track_length <- data_df_trck |>
 
 #' # Plotting trajectory distribution
 #' We will plot the individual-wise distributions of step-length (m) and 
-#' turn angle (radians) to see how individuals move
+#' turn angle (radians) to see how individuals move.   
 
-#' Step-length distribution
+#' ## Step-length distribution
 ggplot(track_length)+
   geom_density(aes(x=sl_, col = Individual_id), linewidth=0.8) + 
   xlim(0,1000)+
@@ -106,7 +106,7 @@ ggplot(track_length)+
   theme_bw() +
   theme(legend.position = c(0.8,0.7))
  
-#' Turn-angle distribution
+#' ## Turn-angle distribution
 ggplot(track_length)+
   geom_density(aes(x=ta_, col = Individual_id), linewidth=0.8) + 
   labs(x= "Turn angle")+
