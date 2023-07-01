@@ -27,7 +27,7 @@ library(ctmm)
 #dir()
 #' ## Load data
 data <- read.csv("Leopard.csv", header = TRUE)
-View(data)
+#View(data)
 
 #' ## Make the dataframe
 data_df <-as.data.frame(data)
