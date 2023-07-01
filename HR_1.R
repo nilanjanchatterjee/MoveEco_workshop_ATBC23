@@ -166,7 +166,7 @@ FIT <- ctmm.select(indv1, GUESS, trace=2)
 summary(FIT)
 
 #' # AKDE home-range
-ud <- akde(try1, FIT, weights=TRUE)
+ud <- akde(indv1, FIT, weights=TRUE)
 summary(ud)
 
 plot(ud)
